@@ -7,7 +7,7 @@ export function App() {
   const { status, callTool } = useMcpClient();
   const [selected, setSelected] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [outcome, setOutcome] = useState<{ tool: string; value: Outcome } | null>(null);
 
   if (status.state === 'connecting') return <Shell>Connecting to /mcp…</Shell>;
   if (status.state === 'error') {
@@ -27,11 +27,17 @@ export function App() {
     const started = performance.now();
     try {
       const result = await callTool(tool.name, args);
-      setOutcome({ kind: 'result', result, ms: Math.round(performance.now() - started) });
+      setOutcome({
+        tool: tool.name,
+        value: { kind: 'result', result, ms: Math.round(performance.now() - started) },
+      });
     } catch (error) {
       setOutcome({
-        kind: 'protocol-error',
-        message: error instanceof Error ? error.message : String(error),
+        tool: tool.name,
+        value: {
+          kind: 'protocol-error',
+          message: error instanceof Error ? error.message : String(error),
+        },
       });
     } finally {
       setBusy(false);
@@ -68,9 +74,9 @@ export function App() {
         />
       </section>
 
-      {outcome && (
+      {outcome?.tool === tool.name && (
         <section>
-          <ResultPanel outcome={outcome} />
+          <ResultPanel outcome={outcome.value} />
         </section>
       )}
     </Shell>
