@@ -1,0 +1,29 @@
+{
+  "name": "open-meteo-mcp",
+  "private": true,
+  "description": "MCP server exposing weather tools backed by the Open-Meteo public API, plus a small React client to try them",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "lint": "eslint .",
+    "test": "npm test --workspaces",
+    "dev": "npm run dev --workspace server",
+    "dev:web": "npm run dev --workspace web",
+    "start": "npm start --workspace server",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "eslint": "^10.10.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.70.0"
+  }
+}

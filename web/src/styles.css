@@ -1,0 +1,158 @@
+:root {
+  color-scheme: light dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.45;
+  --border: color-mix(in srgb, CanvasText 18%, transparent);
+  --muted: color-mix(in srgb, CanvasText 60%, transparent);
+  --error-bg: color-mix(in srgb, crimson 12%, Canvas);
+  --error-fg: crimson;
+  --accent: royalblue;
+}
+
+body {
+  margin: 0;
+  background: Canvas;
+  color: CanvasText;
+}
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+}
+
+header p {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+}
+
+nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+nav button {
+  font: inherit;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+nav button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+section h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+}
+
+section > p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+label span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+label code {
+  font-size: 0.95rem;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: Canvas;
+  color: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+form button {
+  justify-self: start;
+  font: inherit;
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+
+form button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+pre {
+  margin: 0;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, CanvasText 6%, Canvas);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.85rem;
+}
+
+.error {
+  background: var(--error-bg);
+  color: var(--error-fg);
+}
+
+.result h3 {
+  margin: 1rem 0 0.4rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.result h3:first-child {
+  margin-top: 0;
+}
+
+.status {
+  color: var(--muted);
+}

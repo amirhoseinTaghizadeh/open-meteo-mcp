@@ -1,0 +1,31 @@
+{
+  "name": "@open-meteo-mcp/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server with search_places, get_forecast and compare_locations tools backed by Open-Meteo",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --watch src/http.ts",
+    "dev:stdio": "node src/stdio.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "node dist/http.js",
+    "start:stdio": "node dist/stdio.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0"
+  }
+}
