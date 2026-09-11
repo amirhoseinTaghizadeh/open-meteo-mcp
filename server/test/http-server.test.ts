@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { silentAuditSink } from '../src/audit.ts';
-import { createHttpServer } from '../src/http-server.ts';
+import { createHttpServer, MAX_BODY_BYTES } from '../src/http-server.ts';
 
 let baseUrl: string;
 let server: ReturnType<typeof createHttpServer>;
@@ -141,6 +141,50 @@ describe('bearer token', () => {
     );
     expect((await client.listTools()).tools).toHaveLength(3);
     await client.close();
+  });
+});
+
+describe('request body limit', () => {
+  const headers = {
+    'content-type': 'application/json',
+    accept: 'application/json, text/event-stream',
+  };
+
+  it('rejects a body whose declared length is over the cap, before reading it', async () => {
+    const res = await fetch(`${baseUrl}/mcp`, {
+      method: 'POST',
+      headers,
+      body: '{"jsonrpc":"2.0","id":1,"method":"ping","pad":"' + 'a'.repeat(MAX_BODY_BYTES) + '"}',
+    });
+    expect(res.status).toBe(413);
+    expect(res.headers.get('connection')).toBe('close');
+  });
+
+  it('rejects a chunked body that grows past the cap', async () => {
+    const status = await new Promise<number>((resolve, reject) => {
+      const req = request(
+        `${baseUrl}/mcp`,
+        { method: 'POST', headers: { ...headers, 'transfer-encoding': 'chunked' } },
+        (res) => {
+          res.resume();
+          resolve(res.statusCode ?? 0);
+        },
+      );
+      req.on('error', (error: NodeJS.ErrnoException) => {
+        // the server may drop the socket while we are still writing
+        if (error.code !== 'ECONNRESET' && error.code !== 'EPIPE') reject(error);
+      });
+      const chunk = 'a'.repeat(64 * 1024);
+      for (let sent = 0; sent <= MAX_BODY_BYTES; sent += chunk.length) req.write(chunk);
+      req.end();
+    });
+    expect(status).toBe(413);
+  });
+
+  it('answers malformed JSON with a JSON-RPC parse error', async () => {
+    const res = await fetch(`${baseUrl}/mcp`, { method: 'POST', headers, body: '{not json' });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: { code: -32700 } });
   });
 });
 

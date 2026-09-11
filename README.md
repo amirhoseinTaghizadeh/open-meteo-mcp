@@ -110,7 +110,7 @@ HTTP   ──▶ server/src/http.ts ──┘
 Every tool call goes through, in order:
 
 1. Host and Origin check (the SDK's DNS-rebinding guard, HTTP only).
-2. Only `POST` on `/mcp`, and a bearer token if `MCP_BEARER_TOKEN` is set.
+2. Only `POST` on `/mcp`, bodies over 1 MiB are refused with 413, and a bearer token is required if `MCP_BEARER_TOKEN` is set.
 3. Input validation against the tool's schema, before the handler runs.
 4. A rate limit for the whole process (`TOOL_CALLS_PER_MINUTE`). Over the limit, the LLM gets a sentence saying how long to wait.
 5. The tool itself. Upstream failures become readable `isError` results.
