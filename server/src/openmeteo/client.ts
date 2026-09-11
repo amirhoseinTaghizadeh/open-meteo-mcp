@@ -10,7 +10,7 @@ export const REQUEST_TIMEOUT_MS = 5_000;
 
 // forecasts only change hourly upstream, so a minute of caching is safe
 export const CACHE_TTL_MS = 60_000;
-const CACHE_MAX_ENTRIES = 500;
+export const CACHE_MAX_ENTRIES = 500;
 
 export type TemperatureUnit = 'celsius' | 'fahrenheit';
 
@@ -149,6 +149,7 @@ async function getJson<T>(url: URL, schema: z.ZodType<T>): Promise<T> {
     const oldest = cache.keys().next().value;
     if (oldest !== undefined) cache.delete(oldest);
   }
+  cache.delete(key);
   cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });
   return value;
 }

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  CACHE_MAX_ENTRIES,
   CACHE_TTL_MS,
   FORECAST_URL,
   GEOCODING_URL,
@@ -141,6 +142,21 @@ describe('cache', () => {
     vi.advanceTimersByTime(CACHE_TTL_MS + 1);
     await geocode('Lisbon', 5);
     expect(spy).toHaveBeenCalledTimes(3);
+  });
+
+  it('evicts the oldest entry, not a freshly refreshed one', async () => {
+    vi.useFakeTimers();
+    const spy = stubFetch(() => jsonResponse(geocodingLisbon));
+
+    for (let i = 0; i < CACHE_MAX_ENTRIES; i++) await geocode(`place${i}`, 1);
+    vi.advanceTimersByTime(CACHE_TTL_MS + 1);
+    await geocode('place1', 1); // expired, refreshed: should now be the newest entry
+    await geocode('extra1', 1);
+    await geocode('extra2', 1); // cache is full again, the oldest entry goes
+    spy.mockClear();
+
+    await geocode('place1', 1);
+    expect(spy).not.toHaveBeenCalled();
   });
 
   it('never caches a failure', async () => {
