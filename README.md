@@ -112,7 +112,7 @@ Every tool call goes through, in order:
 1. Host and Origin check (the SDK's DNS-rebinding guard, HTTP only).
 2. Only `POST` on `/mcp`, bodies over 1 MiB are refused with 413, and a bearer token is required if `MCP_BEARER_TOKEN` is set.
 3. Input validation against the tool's schema, before the handler runs.
-4. A rate limit for the whole process (`TOOL_CALLS_PER_MINUTE`). Over the limit, the LLM gets a sentence saying how long to wait.
+4. A rate limit for the whole process (`TOOL_CALLS_PER_MINUTE`). Over the limit, the LLM gets a sentence saying how long to wait. It counts tool calls, not upstream requests: one `compare_locations` call can be up to ten Open-Meteo requests, and a refused call is one clear answer instead of partial rows.
 5. The tool itself. Upstream failures become readable `isError` results.
 6. Output validation against `outputSchema`.
 7. One audit line per call on stderr:
@@ -138,6 +138,8 @@ Every tool call goes through, in order:
 | `STATIC_DIR`            | `web/dist`                        | Built UI directory                                  |
 | `TOOL_CALLS_PER_MINUTE` | `60`                              | Rate limit across the process, `0` disables         |
 | `MCP_BEARER_TOKEN`      | unset                             | When set, `/mcp` requires `Authorization: Bearer …` |
+
+With a token set, the browser page cannot connect, since it sends no Authorization header. Use MCP Inspector or any client that can send the header.
 
 ## Tests
 

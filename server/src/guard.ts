@@ -1,5 +1,4 @@
-// Sliding-window rate limiter for the whole process. There is no client
-// identity here, so the budget is simply how much this server calls Open-Meteo.
+// Sliding-window limit on tool calls, shared by the whole process.
 
 export interface RateLimiterOptions {
   limit: number; // 0 disables
