@@ -1,9 +1,11 @@
 // Tiny static file server for the built UI. "/" is index.html, anything
 // else must be a real file under the root. No SPA fallback needed.
+import { once } from 'node:events';
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import type { ServerResponse } from 'node:http';
 import path from 'node:path';
+import { pipeline } from 'node:stream/promises';
 
 const CONTENT_TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -48,15 +50,33 @@ export function createStaticHandler(root: string): StaticHandler {
       return;
     }
 
-    res.writeHead(200, {
+    const headers = {
       'content-type': CONTENT_TYPES[path.extname(file)] ?? 'application/octet-stream',
       'content-length': info.size,
       'cache-control': cacheControl(urlPath),
-    });
+    };
     if (method === 'HEAD') {
-      res.end();
+      res.writeHead(200, headers).end();
       return;
     }
-    createReadStream(file).pipe(res);
+
+    // open before sending headers, so an unreadable file can still be a 500
+    const stream = createReadStream(file);
+    try {
+      await once(stream, 'open');
+    } catch (error) {
+      console.error('Could not open static file', file, error);
+      res.writeHead(500).end('Internal server error');
+      return;
+    }
+
+    res.writeHead(200, headers);
+    try {
+      await pipeline(stream, res);
+    } catch (error) {
+      // pipe() would have left this unhandled and taken the process down
+      console.error('Failed while sending static file', file, error);
+      res.destroy();
+    }
   };
 }

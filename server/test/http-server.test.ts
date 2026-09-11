@@ -1,10 +1,10 @@
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { request } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { silentAuditSink } from '../src/audit.ts';
 import { createHttpServer, MAX_BODY_BYTES } from '../src/http-server.ts';
 
@@ -63,6 +63,25 @@ describe('routing', () => {
     const res = await fetch(`${baseUrl}/%2e%2e/secret.txt`);
     expect(res.status).toBe(404);
   });
+
+  it.skipIf(process.getuid?.() === 0)(
+    'answers 500 for a file it cannot read instead of crashing',
+    async () => {
+      const unreadable = path.join(sandbox, 'public', 'locked.txt');
+      await writeFile(unreadable, 'nope');
+      await chmod(unreadable, 0o000);
+      const stderr = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      const res = await fetch(`${baseUrl}/locked.txt`);
+
+      expect(res.status).toBe(500);
+      expect(stderr).toHaveBeenCalledOnce();
+      stderr.mockRestore();
+      await chmod(unreadable, 0o600);
+      // and the server is still alive
+      expect((await fetch(`${baseUrl}/healthz`)).status).toBe(200);
+    },
+  );
 
   it('404s unknown paths instead of falling back to index.html', async () => {
     const res = await fetch(`${baseUrl}/does-not-exist`);
