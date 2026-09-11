@@ -143,6 +143,9 @@ describe('bearer token', () => {
     const wrong = await list({ authorization: `Bearer ${token}x` });
     expect(wrong.status).toBe(401);
 
+    const extra = await list({ authorization: `Bearer ${token} extra` });
+    expect(extra.status).toBe(401);
+
     const right = await list({ authorization: `Bearer ${token}` });
     expect(right.status).toBe(200);
   });

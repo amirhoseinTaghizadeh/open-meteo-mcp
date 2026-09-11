@@ -77,8 +77,8 @@ export function createHttpServer({
 
 function bearerMatches(req: IncomingMessage, expected: string): boolean {
   const header = req.headers.authorization ?? '';
-  const [scheme, presented = ''] = header.split(' ', 2);
-  if (scheme?.toLowerCase() !== 'bearer') return false;
+  const [scheme, presented, ...rest] = header.split(' ');
+  if (rest.length > 0 || !presented || scheme?.toLowerCase() !== 'bearer') return false;
   const a = Buffer.from(presented);
   const b = Buffer.from(expected);
   return a.length === b.length && timingSafeEqual(a, b);
